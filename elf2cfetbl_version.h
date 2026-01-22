@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -28,22 +28,22 @@
 /*
  * Development Build Macro Definitions
  */
-#define ELF2CFETBL_BUILD_NUMBER     22 /*!< @brief Number of commits since baseline */
-#define ELF2CFETBL_BUILD_BASELINE   "equuleues-rc1" /*!< @brief Development Build: git tag that is the base for the current */
-#define ELF2CFETBL_BUILD_DEV_CYCLE  "equuleus-rc2" /**< @brief Development: Release name for current development cycle */
-#define ELF2CFETBL_BUILD_CODENAME   "Equuleus" /**< @brief: Development: Code name for the current build */
+#define ELF2CFETBL_BUILD_NUMBER     0 /*!< @brief Number of commits since baseline */
+#define ELF2CFETBL_BUILD_BASELINE   "v7.0.0" /*!< @brief Development Build: git tag that is the base for the current */
+#define ELF2CFETBL_BUILD_DEV_CYCLE  "v7.0.0" /**< @brief Development: Release name for current development cycle */
+#define ELF2CFETBL_BUILD_CODENAME   "Draco" /**< @brief: Development: Code name for the current build */
 
 /*
  * Version Macros, see \ref cfsversions for definitions.
  */
-#define ELF2CFETBL_MAJOR_VERSION 3  /*!< @brief Major version number */
-#define ELF2CFETBL_MINOR_VERSION 1  /*!< @brief Minor version number */
+#define ELF2CFETBL_MAJOR_VERSION 7  /*!< @brief Major version number */
+#define ELF2CFETBL_MINOR_VERSION 0  /*!< @brief Minor version number */
 #define ELF2CFETBL_REVISION      0  /*!< @brief Revision version number. Value of 0 indicates a development version.*/
 
 /**
  * @brief Last official release.
  */
-#define ELF2CFETBL_LAST_OFFICIAL "v3.1.0"
+#define ELF2CFETBL_LAST_OFFICIAL "v7.0.0"
 
 /*!
  * @brief Mission revision.
@@ -52,7 +52,7 @@
  * Values 1-254 are reserved for mission use to denote patches/customizations as needed. NOTE: Reserving 0 and 0xFF for
  * cFS open-source development use (pending resolution of nasa/cFS#440)
  */
-#define ELF2CFETBL_MISSION_REV 0xFF
+#define ELF2CFETBL_MISSION_REV 0x0
 
 /*
  * Tools to construct version string

@@ -1,7 +1,7 @@
 /************************************************************************
- * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ * NASA Docket No. GSC-19,200-1, and identified as "cFS Draco"
  *
- * Copyright (c) 2020 United States Government as represented by the
+ * Copyright (c) 2023 United States Government as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All Rights Reserved.
  *
@@ -2505,7 +2505,7 @@ int32 LocateAndReadUserObject(void)
  *
  */
 
-int32 OutputDataToTargetFile()
+int32 OutputDataToTargetFile(void)
 {
     int32 Status = SUCCESS;
     uint8 AByte  = 0;

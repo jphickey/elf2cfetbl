@@ -24,6 +24,12 @@
 # of the target from targets.cmake and TABLE_FQNAME reflects the first
 # parameter to this function.
 #
+
+# This interface target gives a hook where the user can add any other compile
+# definitions or build options to the tables, by calling target_compile_definitions
+# or target_include_directories, etc.
+add_library(cfe-platform-table-build INTERFACE)
+
 function(do_add_cfe_tables_impl TABLE_FQNAME)
 
     cmake_parse_arguments(ADDTBL_ARG "" "APP_NAME;TARGET_NAME;INSTALL_SUBDIR" "" ${ARGN})
@@ -132,9 +138,10 @@ function(do_add_cfe_tables_impl TABLE_FQNAME)
     # before passing to elf2cfetbl.  It is roundabout but it works.
     add_library(${TABLE_LIBNAME} STATIC EXCLUDE_FROM_ALL ${TABLE_SELECTED_SRCS})
     target_compile_definitions(${TABLE_LIBNAME} PRIVATE
+        CFE_TABLE_BUILD
         CFE_CPU_NAME=${ADDTBL_ARG_TARGET_NAME}
     )
-    target_link_libraries(${TABLE_LIBNAME} ${TABLE_DEPENDENCIES})
+    target_link_libraries(${TABLE_LIBNAME} cfe-platform-table-build ${TABLE_DEPENDENCIES})
 
 
 endfunction(do_add_cfe_tables_impl)
