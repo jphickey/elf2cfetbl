@@ -447,7 +447,7 @@ union Elf_Sym
     Elf64_Sym Sym64;
 };
 
-#define ELF32_ST_INFO (b, t)(((b) << 4) + ((t)&0xf))
+#define ELF32_ST_INFO (b, t)(((b) << 4) + ((t) & 0xf))
 
 /**
  *   Extraction and possible values of symbol table entry binding attributes in st_info
@@ -464,7 +464,7 @@ union Elf_Sym
 /**
  *   Extraction and possible values of symbol table entry type attributes in st_info
  */
-#define ELF32_ST_TYPE (i)((i)&0xf)
+#define ELF32_ST_TYPE (i)((i) & 0xf)
 
 #define STT_NOTYPE  0 /**< \brief The symbol's type is unspecified */
 #define STT_OBJECT  1 /**< \brief Symbol associated with a data object (variable, array, etc) */

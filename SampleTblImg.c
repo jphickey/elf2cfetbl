@@ -34,7 +34,7 @@ typedef struct
 ** The following is an example of the declaration statement that defines the desired
 ** contents of the table image.
 */
-MyTblStruct_t MyTblStruct = {0x01020304, 0x05060708, 0x090A0B0C, 0x0D};
+MyTblStruct_t MyTblStruct = { 0x01020304, 0x05060708, 0x090A0B0C, 0x0D };
 
 /*
 ** The macro below identifies:

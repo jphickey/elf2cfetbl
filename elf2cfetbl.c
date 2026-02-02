@@ -91,11 +91,11 @@ void PrintElfHeader64(union Elf_Ehdr ElfHeaderLcl);
 /**
  *    Global Variables
  */
-char SrcFilename[PATH_MAX] = {""};
-char DstFilename[PATH_MAX] = {""};
-char TableName[38]         = {""};
-char Description[32]       = {""};
-char LineOfText[300]       = {""};
+char SrcFilename[PATH_MAX] = { "" };
+char DstFilename[PATH_MAX] = { "" };
+char TableName[38]         = { "" };
+char Description[32]       = { "" };
+char LineOfText[300]       = { "" };
 
 bool Verbose                     = false;
 bool ReportVersion               = false;
@@ -122,10 +122,12 @@ CFE_FS_Header_t    FileHeader;
 CFE_TBL_File_Hdr_t TableHeader;
 
 union Elf_Ehdr   ElfHeader;
-union Elf_Shdr **SectionHeaderPtrs                  = NULL;
-union Elf_Shdr   SectionHeaderStringTable           = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-int64            SectionHeaderStringTableDataOffset = 0;
-char **          SectionNamePtrs                    = NULL;
+union Elf_Shdr **SectionHeaderPtrs        = NULL;
+union Elf_Shdr   SectionHeaderStringTable = {
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+};
+int64  SectionHeaderStringTableDataOffset = 0;
+char **SectionNamePtrs                    = NULL;
 
 struct stat SrcFileStats;
 
@@ -133,8 +135,8 @@ uint64_t          StringTableDataOffset = 0;
 int32             SymbolTableDataOffset = 0;
 uint64_t          NumSymbols            = 0;
 uint64_t          SymbolTableEntrySize  = 0;
-union Elf_Sym **  SymbolPtrs            = NULL;
-char **           SymbolNames;
+union Elf_Sym   **SymbolPtrs            = NULL;
+char            **SymbolNames;
 int32             TblDefSymbolIndex = -1;
 CFE_TBL_FileDef_t TblFileDef;
 int32             UserObjSymbolIndex = -1;
@@ -153,8 +155,8 @@ typedef struct
     uint32 Second;
 } SpecifiedEpoch_t;
 
-SpecifiedEpoch_t ScEpoch   = {1970, 1, 1, 0, 0, 0};
-SpecifiedEpoch_t FileEpoch = {1970, 1, 1, 0, 0, 0};
+SpecifiedEpoch_t ScEpoch   = { 1970, 1, 1, 0, 0, 0 };
+SpecifiedEpoch_t FileEpoch = { 1970, 1, 1, 0, 0, 0 };
 time_t           EpochDelta;
 time_t           SrcFileTimeInScEpoch;
 
@@ -162,193 +164,197 @@ time_t           SrcFileTimeInScEpoch;
  *    ELF Characteristic Maps
  */
 ElfStrMap e_type_Map[] = {
-    {ET_NONE, "ET_NONE (0)"}, {ET_REL, "ET_REL (1)"},   {ET_EXEC, "ET_EXEC (2)"},
-    {ET_DYN, "ET_DYN (3)"},   {ET_CORE, "ET_CORE (4)"}, {0, "* Unknown Elf File Type (%d) *"},
+    { ET_NONE, "ET_NONE (0)"                    },
+    { ET_REL,  "ET_REL (1)"                     },
+    { ET_EXEC, "ET_EXEC (2)"                    },
+    { ET_DYN,  "ET_DYN (3)"                     },
+    { ET_CORE, "ET_CORE (4)"                    },
+    { 0,       "* Unknown Elf File Type (%d) *" },
 };
 
 ElfStrMap e_machine_Map[] = {
-    {EM_NONE, "EM_NONE         ( 0)"},
-    {EM_M32, "EM_M32          ( 1)"},
-    {EM_SPARC, "EM_SPARC        ( 2)"},
-    {EM_386, "EM_386          ( 3)"},
-    {EM_68K, "EM_68K          ( 4)"},
-    {EM_88K, "EM_88K          ( 5)"},
-    {EM_860, "EM_860          ( 7)"},
-    {EM_MIPS, "EM_MIPS         ( 8)"},
-    {EM_S370, "EM_S370         ( 9)"},
-    {EM_MIPS_RS3_LE, "EM_MIPS_RS3_LE  (10)"},
-    {EM_PARISC, "EM_PARISC       (15)"},
-    {EM_VPP500, "EM_VPP500       (17)"},
-    {EM_SPARC32PLUS, "EM_SPARC32PLUS  (18)"},
-    {EM_960, "EM_960          (19)"},
-    {EM_PPC, "EM_PPC          (20)"},
-    {EM_PPC64, "EM_PPC64        (21)"},
-    {EM_S390, "EM_S390         (22)"},
-    {EM_SPU, "EM_SPU          (23)"},
-    {EM_V800, "EM_V800         (36)"},
-    {EM_FR20, "EM_FR20         (37)"},
-    {EM_RH32, "EM_RH32         (38)"},
-    {EM_RCE, "EM_RCE          (39)"},
-    {EM_ARM, "EM_ARM          (40)"},
-    {EM_ALPHA, "EM_ALPHA        (41)"},
-    {EM_SH, "EM_SH           (42)"},
-    {EM_SPARCV9, "EM_SPARCV9      (43)"},
-    {EM_TRICORE, "EM_TRICORE      (44)"},
-    {EM_ARC, "EM_ARC          (45)"},
-    {EM_H8_300, "EM_H8_300       (46)"},
-    {EM_H8_300H, "EM_H8_300H      (47)"},
-    {EM_H8S, "EM_H8S          (48)"},
-    {EM_H8_500, "EM_H8_500       (49)"},
-    {EM_IA_64, "EM_IA_64        (50)"},
-    {EM_MIPS_X, "EM_MIPS_X       (51)"},
-    {EM_COLDFIRE, "EM_COLDFIRE     (52)"},
-    {EM_68HC12, "EM_68HC12       (53)"},
-    {EM_MMA, "EM_MMA          (54)"},
-    {EM_PCP, "EM_PCP          (55)"},
-    {EM_NCPU, "EM_NCPU         (56)"},
-    {EM_NDR1, "EM_NDR1         (57)"},
-    {EM_STARCORE, "EM_STARCORE     (58)"},
-    {EM_ME16, "EM_ME16         (59)"},
-    {EM_ST100, "EM_ST100        (60)"},
-    {EM_TINYJ, "EM_TINYJ        (61)"},
-    {EM_X86_64, "EM_X86_64       (62)"},
-    {EM_PDSP, "EM_PDSP         (63)"},
-    {EM_PDP10, "EM_PDP10        (64)"},
-    {EM_PDP11, "EM_PDP11        (65)"},
-    {EM_FX66, "EM_FX66         (66)"},
-    {EM_ST9PLUS, "EM_ST9PLUS      (67)"},
-    {EM_ST7, "EM_ST7          (68)"},
-    {EM_68HC16, "EM_68HC16       (69)"},
-    {EM_68HC11, "EM_68HC11       (70)"},
-    {EM_68HC08, "EM_68HC08       (71)"},
-    {EM_68HC05, "EM_68HC05       (72)"},
-    {EM_SVX, "EM_SVX          (73)"},
-    {EM_ST19, "EM_ST19         (74)"},
-    {EM_VAX, "EM_VAX          (75)"},
-    {EM_CRIS, "EM_CRIS         (76)"},
-    {EM_JAVELIN, "EM_JAVELIN      (77)"},
-    {EM_FIREPATH, "EM_FIREPATH     (78)"},
-    {EM_ZSP, "EM_ZSP          (79)"},
-    {EM_MMIX, "EM_MMIX         (80)"},
-    {EM_HUANY, "EM_HUANY        (81)"},
-    {EM_PRISM, "EM_PRISM        (82)"},
-    {EM_AVR, "EM_AVR          (83)"},
-    {EM_FR30, "EM_FR30         (84)"},
-    {EM_D10V, "EM_D10V         (85)"},
-    {EM_D30V, "EM_D30V         (86)"},
-    {EM_V850, "EM_V850         (87)"},
-    {EM_M32R, "EM_M32R         (88)"},
-    {EM_MN10300, "EM_MN10300      (89)"},
-    {EM_MN10200, "EM_MN10200      (90)"},
-    {EM_PJ, "EM_PJ           (91)"},
-    {EM_OPENRISC, "EM_OPENRISC     (92)"},
-    {EM_ARC_COMPACT, "EM_ARC_COMPACT  (93)"},
-    {EM_XTENSA, "EM_XTENSA       (94)"},
-    {EM_VIDEOCORE, "EM_VIDEOCORE    (95)"},
-    {EM_TMM_GPP, "EM_TMM_GPP      (96)"},
-    {EM_NS32K, "EM_NS32K        (97)"},
-    {EM_TPC, "EM_TPC          (98)"},
-    {EM_SNP1K, "EM_SNP1K        (99)"},
-    {EM_ST200, "EM_ST200       (100)"},
-    {EM_IP2K, "EM_IP2K        (101)"},
-    {EM_MAX, "EM_MAX         (102)"},
-    {EM_CR, "EM_CR          (103)"},
-    {EM_F2MC16, "EM_F2MC16      (104)"},
-    {EM_MSP430, "EM_MSP430      (105)"},
-    {EM_BLACKFIN, "EM_BLACKFIN    (106)"},
-    {EM_SE_C33, "EM_SE_C33      (107)"},
-    {EM_SEP, "EM_SEP         (108)"},
-    {EM_ARCA, "EM_ARCA        (109)"},
-    {EM_UNICORE, "EM_UNICORE     (110)"},
-    {EM_EXCESS, "EM_EXCESS      (111)"},
-    {EM_DXP, "EM_DXP         (112)"},
-    {EM_ALTERA_NIOS2, "EM_ALTERA_NIOS2 (113)"},
-    {EM_CRX, "EM_CRX         (114)"},
-    {EM_XGATE, "EM_XGATE       (115)"},
-    {EM_C166, "EM_C166        (116)"},
-    {EM_M16C, "EM_M16C        (117)"},
-    {EM_DSPIC30F, "EM_DSPIC30F    (118)"},
-    {EM_CE, "EM_CE          (119)"},
-    {EM_M32C, "EM_M32C        (120)"},
-    {EM_TSK3000, "EM_TSK3000     (131)"},
-    {EM_RS08, "EM_RS08        (132)"},
-    {EM_SHARC, "EM_SHARC       (133)"},
-    {EM_ECOG2, "EM_ECOG2       (134)"},
-    {EM_SCORE7, "EM_SCORE7      (135)"},
-    {EM_DSP24, "EM_DSP24       (136)"},
-    {EM_VIDEOCORE3, "EM_VIDEOCORE3  (137)"},
-    {EM_LATTICEMICO32, "EM_LATTICEMICO32(138)"},
-    {EM_SE_C17, "EM_SE_C17      (139)"},
-    {EM_TI_C6000, "EM_TI_C6000    (140)"},
-    {EM_TI_C2000, "EM_TI_C2000    (141)"},
-    {EM_TI_C5500, "EM_TI_C5500    (142)"},
-    {EM_TI_ARP32, "EM_TI_ARP32    (143)"},
-    {EM_TI_PRU, "EM_TI_PRU      (144)"},
-    {EM_MMDSP_PLUS, "EM_MMDSP_PLUS  (160)"},
-    {EM_CYPRESS_M8C, "EM_CYPRESS_M8C (161)"},
-    {EM_R32C, "EM_R32C        (162)"},
-    {EM_TRIMEDIA, "EM_TRIMEDIA    (163)"},
-    {EM_QDSP6, "EM_QDSP6       (164)"},
-    {EM_8051, "EM_8051        (165)"},
-    {EM_STXP7X, "EM_STXP7X      (166)"},
-    {EM_NDS32, "EM_NDS32       (167)"},
-    {EM_ECOG1, "EM_ECOG1       (168)"},
-    {EM_ECOG1X, "EM_ECOG1X      (168)"},
-    {EM_MAXQ30, "EM_MAXQ30      (169)"},
-    {EM_XIMO16, "EM_XIMO16      (170)"},
-    {EM_MANIK, "EM_MANIK       (171)"},
-    {EM_RX, "EM_RX          (173)"},
-    {EM_METAG, "EM_METAG       (174)"},
-    {EM_MCST_ELBRUS, "EM_MCST_ELBRUS (175)"},
-    {EM_ECOG16, "EM_ECOG16      (176)"},
-    {EM_CR16, "EM_CR16        (177)"},
-    {EM_ETPU, "EM_ETPU        (178)"},
-    {EM_SLE9X, "EM_SLE9X       (179)"},
-    {EM_L10M, "EM_L10M        (180)"},
-    {EM_K10M, "EM_K10M        (181)"},
-    {EM_AARCH64, "EM_AARCH64     (183)"},
-    {EM_AVR32, "EM_AVR32       (185)"},
-    {EM_STM8, "EM_STM8        (186)"},
-    {EM_TILE64, "EM_TILE64      (187)"},
-    {EM_TILEPRO, "EM_TILEPRO     (188)"},
-    {EM_MICROBLAZE, "EM_MICROBLAZE  (189)"},
-    {EM_CUDA, "EM_CUDA        (190)"},
-    {EM_TILEGX, "EM_TILEGX      (191)"},
-    {EM_CLOUDSHIELD, "EM_CLOUDSHIELD (192)"},
-    {EM_COREA_1ST, "EM_COREA_1ST   (193)"},
-    {EM_COREA_2ND, "EM_COREA_2ND   (194)"},
-    {EM_ARC_COMPACT2, "EM_ARC_COMPACT2 (195)"},
-    {EM_OPEN8, "EM_OPEN8       (196)"},
-    {EM_RL78, "EM_RL78        (197)"},
-    {EM_VIDEOCORE5, "EM_VIDEOCORE5  (198)"},
-    {EM_78KOR, "EM_78KOR       (199)"},
-    {EM_56800EX, "EM_56800EX     (200)"},
-    {EM_BA1, "EM_BA1         (201)"},
-    {EM_BA2, "EM_BA2         (202)"},
-    {EM_XCORE, "EM_XCORE       (203)"},
-    {EM_MCHP_PIC, "EM_MCHP_PIC    (204)"},
-    {EM_INTEL205, "EM_INTEL205    (205)"},
-    {EM_INTEL206, "EM_INTEL206    (206)"},
-    {EM_INTEL207, "EM_INTEL207    (207)"},
-    {EM_INTEL208, "EM_INTEL208    (208)"},
-    {EM_INTEL209, "EM_INTEL209    (209)"},
-    {EM_KM32, "EM_KM32        (210)"},
-    {EM_KMX32, "EM_KMX32       (211)"},
-    {EM_KMX16, "EM_KMX16       (212)"},
-    {EM_KMX8, "EM_KMX8        (213)"},
-    {EM_KVARC, "EM_KVARC       (214)"},
-    {EM_CDP, "EM_CDP         (215)"},
-    {EM_COGE, "EM_COGE        (216)"},
-    {EM_COOL, "EM_COOL        (217)"},
-    {EM_NORC, "EM_NORC        (218)"},
-    {EM_CSR_KALIMBA, "EM_CSR_KALIMBA (219)"},
-    {EM_Z80, "EM_Z80         (220)"},
-    {EM_VISIUM, "EM_VISIUM      (221)"},
-    {EM_FT32, "EM_FT32        (222)"},
-    {EM_MOXIE, "EM_MOXIE       (223)"},
-    {EM_AMDGPU, "EM_AMDGPU      (224)"},
-    {EM_RISCV, "EM_RISCV       (243)"},
-    {0, "* Unknown Machine Type (%d) *"},
+    { EM_NONE,          "EM_NONE         ( 0)"          },
+    { EM_M32,           "EM_M32          ( 1)"          },
+    { EM_SPARC,         "EM_SPARC        ( 2)"          },
+    { EM_386,           "EM_386          ( 3)"          },
+    { EM_68K,           "EM_68K          ( 4)"          },
+    { EM_88K,           "EM_88K          ( 5)"          },
+    { EM_860,           "EM_860          ( 7)"          },
+    { EM_MIPS,          "EM_MIPS         ( 8)"          },
+    { EM_S370,          "EM_S370         ( 9)"          },
+    { EM_MIPS_RS3_LE,   "EM_MIPS_RS3_LE  (10)"          },
+    { EM_PARISC,        "EM_PARISC       (15)"          },
+    { EM_VPP500,        "EM_VPP500       (17)"          },
+    { EM_SPARC32PLUS,   "EM_SPARC32PLUS  (18)"          },
+    { EM_960,           "EM_960          (19)"          },
+    { EM_PPC,           "EM_PPC          (20)"          },
+    { EM_PPC64,         "EM_PPC64        (21)"          },
+    { EM_S390,          "EM_S390         (22)"          },
+    { EM_SPU,           "EM_SPU          (23)"          },
+    { EM_V800,          "EM_V800         (36)"          },
+    { EM_FR20,          "EM_FR20         (37)"          },
+    { EM_RH32,          "EM_RH32         (38)"          },
+    { EM_RCE,           "EM_RCE          (39)"          },
+    { EM_ARM,           "EM_ARM          (40)"          },
+    { EM_ALPHA,         "EM_ALPHA        (41)"          },
+    { EM_SH,            "EM_SH           (42)"          },
+    { EM_SPARCV9,       "EM_SPARCV9      (43)"          },
+    { EM_TRICORE,       "EM_TRICORE      (44)"          },
+    { EM_ARC,           "EM_ARC          (45)"          },
+    { EM_H8_300,        "EM_H8_300       (46)"          },
+    { EM_H8_300H,       "EM_H8_300H      (47)"          },
+    { EM_H8S,           "EM_H8S          (48)"          },
+    { EM_H8_500,        "EM_H8_500       (49)"          },
+    { EM_IA_64,         "EM_IA_64        (50)"          },
+    { EM_MIPS_X,        "EM_MIPS_X       (51)"          },
+    { EM_COLDFIRE,      "EM_COLDFIRE     (52)"          },
+    { EM_68HC12,        "EM_68HC12       (53)"          },
+    { EM_MMA,           "EM_MMA          (54)"          },
+    { EM_PCP,           "EM_PCP          (55)"          },
+    { EM_NCPU,          "EM_NCPU         (56)"          },
+    { EM_NDR1,          "EM_NDR1         (57)"          },
+    { EM_STARCORE,      "EM_STARCORE     (58)"          },
+    { EM_ME16,          "EM_ME16         (59)"          },
+    { EM_ST100,         "EM_ST100        (60)"          },
+    { EM_TINYJ,         "EM_TINYJ        (61)"          },
+    { EM_X86_64,        "EM_X86_64       (62)"          },
+    { EM_PDSP,          "EM_PDSP         (63)"          },
+    { EM_PDP10,         "EM_PDP10        (64)"          },
+    { EM_PDP11,         "EM_PDP11        (65)"          },
+    { EM_FX66,          "EM_FX66         (66)"          },
+    { EM_ST9PLUS,       "EM_ST9PLUS      (67)"          },
+    { EM_ST7,           "EM_ST7          (68)"          },
+    { EM_68HC16,        "EM_68HC16       (69)"          },
+    { EM_68HC11,        "EM_68HC11       (70)"          },
+    { EM_68HC08,        "EM_68HC08       (71)"          },
+    { EM_68HC05,        "EM_68HC05       (72)"          },
+    { EM_SVX,           "EM_SVX          (73)"          },
+    { EM_ST19,          "EM_ST19         (74)"          },
+    { EM_VAX,           "EM_VAX          (75)"          },
+    { EM_CRIS,          "EM_CRIS         (76)"          },
+    { EM_JAVELIN,       "EM_JAVELIN      (77)"          },
+    { EM_FIREPATH,      "EM_FIREPATH     (78)"          },
+    { EM_ZSP,           "EM_ZSP          (79)"          },
+    { EM_MMIX,          "EM_MMIX         (80)"          },
+    { EM_HUANY,         "EM_HUANY        (81)"          },
+    { EM_PRISM,         "EM_PRISM        (82)"          },
+    { EM_AVR,           "EM_AVR          (83)"          },
+    { EM_FR30,          "EM_FR30         (84)"          },
+    { EM_D10V,          "EM_D10V         (85)"          },
+    { EM_D30V,          "EM_D30V         (86)"          },
+    { EM_V850,          "EM_V850         (87)"          },
+    { EM_M32R,          "EM_M32R         (88)"          },
+    { EM_MN10300,       "EM_MN10300      (89)"          },
+    { EM_MN10200,       "EM_MN10200      (90)"          },
+    { EM_PJ,            "EM_PJ           (91)"          },
+    { EM_OPENRISC,      "EM_OPENRISC     (92)"          },
+    { EM_ARC_COMPACT,   "EM_ARC_COMPACT  (93)"          },
+    { EM_XTENSA,        "EM_XTENSA       (94)"          },
+    { EM_VIDEOCORE,     "EM_VIDEOCORE    (95)"          },
+    { EM_TMM_GPP,       "EM_TMM_GPP      (96)"          },
+    { EM_NS32K,         "EM_NS32K        (97)"          },
+    { EM_TPC,           "EM_TPC          (98)"          },
+    { EM_SNP1K,         "EM_SNP1K        (99)"          },
+    { EM_ST200,         "EM_ST200       (100)"          },
+    { EM_IP2K,          "EM_IP2K        (101)"          },
+    { EM_MAX,           "EM_MAX         (102)"          },
+    { EM_CR,            "EM_CR          (103)"          },
+    { EM_F2MC16,        "EM_F2MC16      (104)"          },
+    { EM_MSP430,        "EM_MSP430      (105)"          },
+    { EM_BLACKFIN,      "EM_BLACKFIN    (106)"          },
+    { EM_SE_C33,        "EM_SE_C33      (107)"          },
+    { EM_SEP,           "EM_SEP         (108)"          },
+    { EM_ARCA,          "EM_ARCA        (109)"          },
+    { EM_UNICORE,       "EM_UNICORE     (110)"          },
+    { EM_EXCESS,        "EM_EXCESS      (111)"          },
+    { EM_DXP,           "EM_DXP         (112)"          },
+    { EM_ALTERA_NIOS2,  "EM_ALTERA_NIOS2 (113)"         },
+    { EM_CRX,           "EM_CRX         (114)"          },
+    { EM_XGATE,         "EM_XGATE       (115)"          },
+    { EM_C166,          "EM_C166        (116)"          },
+    { EM_M16C,          "EM_M16C        (117)"          },
+    { EM_DSPIC30F,      "EM_DSPIC30F    (118)"          },
+    { EM_CE,            "EM_CE          (119)"          },
+    { EM_M32C,          "EM_M32C        (120)"          },
+    { EM_TSK3000,       "EM_TSK3000     (131)"          },
+    { EM_RS08,          "EM_RS08        (132)"          },
+    { EM_SHARC,         "EM_SHARC       (133)"          },
+    { EM_ECOG2,         "EM_ECOG2       (134)"          },
+    { EM_SCORE7,        "EM_SCORE7      (135)"          },
+    { EM_DSP24,         "EM_DSP24       (136)"          },
+    { EM_VIDEOCORE3,    "EM_VIDEOCORE3  (137)"          },
+    { EM_LATTICEMICO32, "EM_LATTICEMICO32(138)"         },
+    { EM_SE_C17,        "EM_SE_C17      (139)"          },
+    { EM_TI_C6000,      "EM_TI_C6000    (140)"          },
+    { EM_TI_C2000,      "EM_TI_C2000    (141)"          },
+    { EM_TI_C5500,      "EM_TI_C5500    (142)"          },
+    { EM_TI_ARP32,      "EM_TI_ARP32    (143)"          },
+    { EM_TI_PRU,        "EM_TI_PRU      (144)"          },
+    { EM_MMDSP_PLUS,    "EM_MMDSP_PLUS  (160)"          },
+    { EM_CYPRESS_M8C,   "EM_CYPRESS_M8C (161)"          },
+    { EM_R32C,          "EM_R32C        (162)"          },
+    { EM_TRIMEDIA,      "EM_TRIMEDIA    (163)"          },
+    { EM_QDSP6,         "EM_QDSP6       (164)"          },
+    { EM_8051,          "EM_8051        (165)"          },
+    { EM_STXP7X,        "EM_STXP7X      (166)"          },
+    { EM_NDS32,         "EM_NDS32       (167)"          },
+    { EM_ECOG1,         "EM_ECOG1       (168)"          },
+    { EM_ECOG1X,        "EM_ECOG1X      (168)"          },
+    { EM_MAXQ30,        "EM_MAXQ30      (169)"          },
+    { EM_XIMO16,        "EM_XIMO16      (170)"          },
+    { EM_MANIK,         "EM_MANIK       (171)"          },
+    { EM_RX,            "EM_RX          (173)"          },
+    { EM_METAG,         "EM_METAG       (174)"          },
+    { EM_MCST_ELBRUS,   "EM_MCST_ELBRUS (175)"          },
+    { EM_ECOG16,        "EM_ECOG16      (176)"          },
+    { EM_CR16,          "EM_CR16        (177)"          },
+    { EM_ETPU,          "EM_ETPU        (178)"          },
+    { EM_SLE9X,         "EM_SLE9X       (179)"          },
+    { EM_L10M,          "EM_L10M        (180)"          },
+    { EM_K10M,          "EM_K10M        (181)"          },
+    { EM_AARCH64,       "EM_AARCH64     (183)"          },
+    { EM_AVR32,         "EM_AVR32       (185)"          },
+    { EM_STM8,          "EM_STM8        (186)"          },
+    { EM_TILE64,        "EM_TILE64      (187)"          },
+    { EM_TILEPRO,       "EM_TILEPRO     (188)"          },
+    { EM_MICROBLAZE,    "EM_MICROBLAZE  (189)"          },
+    { EM_CUDA,          "EM_CUDA        (190)"          },
+    { EM_TILEGX,        "EM_TILEGX      (191)"          },
+    { EM_CLOUDSHIELD,   "EM_CLOUDSHIELD (192)"          },
+    { EM_COREA_1ST,     "EM_COREA_1ST   (193)"          },
+    { EM_COREA_2ND,     "EM_COREA_2ND   (194)"          },
+    { EM_ARC_COMPACT2,  "EM_ARC_COMPACT2 (195)"         },
+    { EM_OPEN8,         "EM_OPEN8       (196)"          },
+    { EM_RL78,          "EM_RL78        (197)"          },
+    { EM_VIDEOCORE5,    "EM_VIDEOCORE5  (198)"          },
+    { EM_78KOR,         "EM_78KOR       (199)"          },
+    { EM_56800EX,       "EM_56800EX     (200)"          },
+    { EM_BA1,           "EM_BA1         (201)"          },
+    { EM_BA2,           "EM_BA2         (202)"          },
+    { EM_XCORE,         "EM_XCORE       (203)"          },
+    { EM_MCHP_PIC,      "EM_MCHP_PIC    (204)"          },
+    { EM_INTEL205,      "EM_INTEL205    (205)"          },
+    { EM_INTEL206,      "EM_INTEL206    (206)"          },
+    { EM_INTEL207,      "EM_INTEL207    (207)"          },
+    { EM_INTEL208,      "EM_INTEL208    (208)"          },
+    { EM_INTEL209,      "EM_INTEL209    (209)"          },
+    { EM_KM32,          "EM_KM32        (210)"          },
+    { EM_KMX32,         "EM_KMX32       (211)"          },
+    { EM_KMX16,         "EM_KMX16       (212)"          },
+    { EM_KMX8,          "EM_KMX8        (213)"          },
+    { EM_KVARC,         "EM_KVARC       (214)"          },
+    { EM_CDP,           "EM_CDP         (215)"          },
+    { EM_COGE,          "EM_COGE        (216)"          },
+    { EM_COOL,          "EM_COOL        (217)"          },
+    { EM_NORC,          "EM_NORC        (218)"          },
+    { EM_CSR_KALIMBA,   "EM_CSR_KALIMBA (219)"          },
+    { EM_Z80,           "EM_Z80         (220)"          },
+    { EM_VISIUM,        "EM_VISIUM      (221)"          },
+    { EM_FT32,          "EM_FT32        (222)"          },
+    { EM_MOXIE,         "EM_MOXIE       (223)"          },
+    { EM_AMDGPU,        "EM_AMDGPU      (224)"          },
+    { EM_RISCV,         "EM_RISCV       (243)"          },
+    { 0,                "* Unknown Machine Type (%d) *" },
 };
 
 /* Elf Header helper functions */
@@ -913,7 +919,7 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
     bool      InputFileSpecified  = false;
     bool      OutputFileSpecified = false;
     int       i                   = 1;
-    char *    EndPtr;
+    char     *EndPtr;
     uint32    MaxDay;
     struct tm FileEpochTm;
     struct tm ScEpochTm;
@@ -1086,8 +1092,9 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                         ScEpoch.Hour = strtoul(&Arguments[i][13], &EndPtr, 0);
                         if ((EndPtr != &Arguments[i][15]) || (ScEpoch.Hour > 23))
                         {
-                            fprintf(stderr, "Error! Spacecraft Epoch Hour is not of the form 'hh:' where hh is in the "
-                                            "range of 0-23\n");
+                            fprintf(stderr,
+                                    "Error! Spacecraft Epoch Hour is not of the form 'hh:' where hh is in the "
+                                    "range of 0-23\n");
                             Status = false;
                         }
                         else
@@ -1095,8 +1102,9 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                             ScEpoch.Minute = strtoul(&Arguments[i][16], &EndPtr, 0);
                             if ((EndPtr != &Arguments[i][18]) || (ScEpoch.Minute > 59))
                             {
-                                fprintf(stderr, "Error! Spacecraft Epoch Minute is not of the form 'mm:' where mm is "
-                                                "in the range of 0-59\n");
+                                fprintf(stderr,
+                                        "Error! Spacecraft Epoch Minute is not of the form 'mm:' where mm is "
+                                        "in the range of 0-59\n");
                                 Status = false;
                             }
                             else
@@ -1104,8 +1112,9 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                                 ScEpoch.Second = strtoul(&Arguments[i][19], &EndPtr, 0);
                                 if ((EndPtr != &Arguments[i][21]) || (ScEpoch.Second > 59))
                                 {
-                                    fprintf(stderr, "Error! Spacecraft Epoch Second is not of the form 'ss' where ss "
-                                                    "is in the range of 0-59\n");
+                                    fprintf(stderr,
+                                            "Error! Spacecraft Epoch Second is not of the form 'ss' where ss "
+                                            "is in the range of 0-59\n");
                                     Status = false;
                                 }
                                 else
@@ -1138,8 +1147,8 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                 else
                 {
                     MaxDay = 31;
-                    if ((FileEpoch.Month == 4) || (FileEpoch.Month == 6) || (FileEpoch.Month == 9) ||
-                        (FileEpoch.Month == 11))
+                    if ((FileEpoch.Month == 4) || (FileEpoch.Month == 6) || (FileEpoch.Month == 9)
+                        || (FileEpoch.Month == 11))
                     {
                         MaxDay = 30;
                     }
@@ -1191,8 +1200,9 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                             FileEpoch.Minute = strtoul(&Arguments[i][16], &EndPtr, 0);
                             if ((EndPtr != &Arguments[i][18]) || (FileEpoch.Minute > 59))
                             {
-                                fprintf(stderr, "Error! File Epoch Minute is not of the form 'mm:' where mm is in the "
-                                                "range of 0-59\n");
+                                fprintf(stderr,
+                                        "Error! File Epoch Minute is not of the form 'mm:' where mm is in the "
+                                        "range of 0-59\n");
                                 Status = false;
                             }
                             else
@@ -1200,8 +1210,9 @@ int32 ProcessCmdLineOptions(int ArgumentCount, char *Arguments[])
                                 FileEpoch.Second = strtoul(&Arguments[i][19], &EndPtr, 0);
                                 if ((EndPtr != &Arguments[i][21]) || (FileEpoch.Second > 59))
                                 {
-                                    fprintf(stderr, "Error! File Epoch Second is not of the form 'ss' where ss is in "
-                                                    "the range of 0-59\n");
+                                    fprintf(stderr,
+                                            "Error! File Epoch Second is not of the form 'ss' where ss is in "
+                                            "the range of 0-59\n");
                                     Status = false;
                                 }
                                 else
@@ -1266,11 +1277,15 @@ void OutputVersionInfo(void)
 {
     char VersionString[ELF2CFETBL_CFG_MAX_VERSION_STR_LEN];
 
-    snprintf(VersionString, ELF2CFETBL_CFG_MAX_VERSION_STR_LEN,
-        "%s %s %s (Codename %s), Last Official Release: %s %s)",
-        "elf2cfetbl", ELF2CFETBL_REVISION == 0 ? "Development Build" : "Release",
-        ELF2CFETBL_VERSION, ELF2CFETBL_BUILD_CODENAME, "elf2cfetbl",
-        ELF2CFETBL_LAST_OFFICIAL);
+    snprintf(VersionString,
+             ELF2CFETBL_CFG_MAX_VERSION_STR_LEN,
+             "%s %s %s (Codename %s), Last Official Release: %s %s)",
+             "elf2cfetbl",
+             ELF2CFETBL_REVISION == 0 ? "Development Build" : "Release",
+             ELF2CFETBL_VERSION,
+             ELF2CFETBL_BUILD_CODENAME,
+             "elf2cfetbl",
+             ELF2CFETBL_LAST_OFFICIAL);
 
     printf("\n%s\n", VersionString);
 }
@@ -1416,7 +1431,8 @@ int32 OpenSrcFile(void)
         if (Verbose)
         {
             printf("Original Source File Modification Time: %s\n", ctime_r(&SrcFileStats.st_mtime, TimeBuff));
-            printf("Source File Modification Time in Seconds since S/C Epoch: %ld (0x%08lX)\n", SrcFileTimeInScEpoch,
+            printf("Source File Modification Time in Seconds since S/C Epoch: %ld (0x%08lX)\n",
+                   SrcFileTimeInScEpoch,
                    SrcFileTimeInScEpoch);
         }
     }
@@ -1476,8 +1492,8 @@ int32 OpenDstFile(void)
 
 int32 checkELFFileMagicNumber(void)
 {
-    if (get_e_ident(&ElfHeader, EI_MAG0) != ELFMAG0 || get_e_ident(&ElfHeader, EI_MAG1) != ELFMAG1 ||
-        get_e_ident(&ElfHeader, EI_MAG2) != ELFMAG2 || get_e_ident(&ElfHeader, EI_MAG3) != ELFMAG3)
+    if (get_e_ident(&ElfHeader, EI_MAG0) != ELFMAG0 || get_e_ident(&ElfHeader, EI_MAG1) != ELFMAG1
+        || get_e_ident(&ElfHeader, EI_MAG2) != ELFMAG2 || get_e_ident(&ElfHeader, EI_MAG3) != ELFMAG3)
         return FAILED;
     return SUCCESS;
 }
@@ -1500,7 +1516,9 @@ int32 GetElfHeader(void)
     else if (((char *)&EndiannessCheck)[0] != 0x04)
     {
         printf("Unable to determine endianness of this machine! (0x%02x, 0x%02x, 0x%02x, 0x%02x)\n",
-               ((char *)&EndiannessCheck)[0], ((char *)&EndiannessCheck)[1], ((char *)&EndiannessCheck)[2],
+               ((char *)&EndiannessCheck)[0],
+               ((char *)&EndiannessCheck)[1],
+               ((char *)&EndiannessCheck)[2],
                ((char *)&EndiannessCheck)[3]);
         return FAILED;
     }
@@ -1518,7 +1536,9 @@ int32 GetElfHeader(void)
     {
         printf("ELF Header:\n"
                "   e_ident[EI_MAG0..3] = 0x%02x,%c%c%c\n",
-               get_e_ident(&ElfHeader, EI_MAG0), get_e_ident(&ElfHeader, EI_MAG1), get_e_ident(&ElfHeader, EI_MAG2),
+               get_e_ident(&ElfHeader, EI_MAG0),
+               get_e_ident(&ElfHeader, EI_MAG1),
+               get_e_ident(&ElfHeader, EI_MAG2),
                get_e_ident(&ElfHeader, EI_MAG3));
     }
 
@@ -1566,7 +1586,8 @@ int32 GetElfHeader(void)
     if (Status == FAILED)
     {
         printf("Source file '%s' contains objects of class type '%s' which is unsupported by this utility\n",
-               SrcFilename, VerboseStr);
+               SrcFilename,
+               VerboseStr);
         return Status;
     }
 
@@ -1617,7 +1638,8 @@ int32 GetElfHeader(void)
     /* Verify ELF Header Version */
     if (get_e_ident(&ElfHeader, EI_VERSION) != EV_CURRENT)
     {
-        printf("Source file '%s' is improper ELF header version (%d)\n", SrcFilename,
+        printf("Source file '%s' is improper ELF header version (%d)\n",
+               SrcFilename,
                get_e_ident(&ElfHeader, EI_VERSION));
         return FAILED;
     }
@@ -1673,7 +1695,8 @@ int32 GetElfHeader(void)
     /* Verify ELF Object File Version */
     if (get_e_version(&ElfHeader) != EV_CURRENT)
     {
-        printf("Error in source file '%s' - Improper ELF object version (%d)\n", SrcFilename,
+        printf("Error in source file '%s' - Improper ELF object version (%d)\n",
+               SrcFilename,
                get_e_version(&ElfHeader));
         return FAILED;
     }
@@ -1805,8 +1828,8 @@ int32 GetSectionHeader(int32 SectionIndex, union Elf_Shdr *SectionHeader)
                  * Not all compilers generate a separate strtab for section header names; some put everything
                  * into one string table.
                  */
-                if (strcmp(SectionNamePtrs[SectionIndex], ".strtab") == 0 ||
-                    (StringTableDataOffset == 0 && SectionIndex != get_e_shstrndx(&ElfHeader)))
+                if (strcmp(SectionNamePtrs[SectionIndex], ".strtab") == 0
+                    || (StringTableDataOffset == 0 && SectionIndex != get_e_shstrndx(&ElfHeader)))
                 {
                     StringTableDataOffset = get_sh_offset(SectionHeader);
                 }
@@ -2076,10 +2099,12 @@ void PrintElfHeader64(union Elf_Ehdr ElfHeaderLcl)
     if (Verbose)
         printf("   e_entry = 0x%lx\n", (long unsigned int)ElfHeaderLcl.Ehdr64.e_entry);
     if (Verbose)
-        printf("   e_phoff = 0x%08lx (%lu)\n", (long unsigned int)ElfHeaderLcl.Ehdr64.e_phoff,
+        printf("   e_phoff = 0x%08lx (%lu)\n",
+               (long unsigned int)ElfHeaderLcl.Ehdr64.e_phoff,
                (long unsigned int)ElfHeaderLcl.Ehdr64.e_phoff);
     if (Verbose)
-        printf("   e_shoff = 0x%08lx (%lu)\n", (long unsigned int)ElfHeaderLcl.Ehdr64.e_shoff,
+        printf("   e_shoff = 0x%08lx (%lu)\n",
+               (long unsigned int)ElfHeaderLcl.Ehdr64.e_shoff,
                (long unsigned int)ElfHeaderLcl.Ehdr64.e_shoff);
     if (Verbose)
         printf("   e_flags = 0x%08x\n", ElfHeaderLcl.Ehdr64.e_flags);
@@ -2279,18 +2304,20 @@ int32 GetTblDefInfo(void)
     uint64_t calculated_offset;
 
     /* Read the data to be used to format the CFE File and Table Headers */
-    if ((get_st_size(SymbolPtrs[TblDefSymbolIndex]) != sizeof(CFE_TBL_FileDef_t)) &&
-        (get_st_size(SymbolPtrs[TblDefSymbolIndex]) != 0))
+    if ((get_st_size(SymbolPtrs[TblDefSymbolIndex]) != sizeof(CFE_TBL_FileDef_t))
+        && (get_st_size(SymbolPtrs[TblDefSymbolIndex]) != 0))
     {
         printf("Error! '%s' is not properly defined in '%s'.  Size of object is incorrect (%lu).\n",
-               TBL_DEF_SYMBOL_NAME, SrcFilename, (long unsigned int)get_st_size(SymbolPtrs[TblDefSymbolIndex]));
+               TBL_DEF_SYMBOL_NAME,
+               SrcFilename,
+               (long unsigned int)get_st_size(SymbolPtrs[TblDefSymbolIndex]));
         Status = FAILED;
     }
     else
     {
         /* fseek expects a long int, sh_offset and st_value are uint64 for elf64 */
-        calculated_offset = get_sh_offset(SectionHeaderPtrs[get_st_shndx(SymbolPtrs[TblDefSymbolIndex])]) +
-                            get_st_value(SymbolPtrs[TblDefSymbolIndex]);
+        calculated_offset = get_sh_offset(SectionHeaderPtrs[get_st_shndx(SymbolPtrs[TblDefSymbolIndex])])
+                            + get_st_value(SymbolPtrs[TblDefSymbolIndex]);
         SeekOffset = (uint32_t)(calculated_offset);
         if (SeekOffset != calculated_offset)
         {
@@ -2354,7 +2381,8 @@ int32 LocateAndReadUserObject(void)
 
     /* Search the symbol table for the user defined object */
     if (Verbose)
-        printf("\nTrying to match ObjectName '%s'... (length %lu)", TblFileDef.ObjectName,
+        printf("\nTrying to match ObjectName '%s'... (length %lu)",
+               TblFileDef.ObjectName,
                (long unsigned int)strlen(TblFileDef.ObjectName));
     while (i < NumSymbols)
     {
@@ -2389,8 +2417,10 @@ int32 LocateAndReadUserObject(void)
 
         if (Verbose)
         {
-            printf("strstr[%d] = %s; strlenSN = %lu; strlenON = %lu\n", i,
-                   strstr(SymbolNames[i], TblFileDef.ObjectName), (long unsigned int)strlen(SymbolNames[i]),
+            printf("strstr[%d] = %s; strlenSN = %lu; strlenON = %lu\n",
+                   i,
+                   strstr(SymbolNames[i], TblFileDef.ObjectName),
+                   (long unsigned int)strlen(SymbolNames[i]),
                    (long unsigned int)strlen(TblFileDef.ObjectName));
         }
 
@@ -2403,7 +2433,8 @@ int32 LocateAndReadUserObject(void)
         if (i < NumSymbols)
         {
             printf("\nSymbolName = '%s', ObjectName = '%s'\n", SymbolNames[i], TblFileDef.ObjectName);
-            printf("\nSymbolName length = %lu, ObjectName length = %lu\n", (long unsigned int)strlen(SymbolNames[i]),
+            printf("\nSymbolName length = %lu, ObjectName length = %lu\n",
+                   (long unsigned int)strlen(SymbolNames[i]),
                    (long unsigned int)strlen(TblFileDef.ObjectName));
         }
     }
@@ -2443,8 +2474,8 @@ int32 LocateAndReadUserObject(void)
         else
         {
             /* Locate data associated with symbol */
-            calculated_offset = get_sh_offset(SectionHeaderPtrs[get_st_shndx(SymbolPtrs[UserObjSymbolIndex])]) +
-                                get_st_value(SymbolPtrs[UserObjSymbolIndex]);
+            calculated_offset = get_sh_offset(SectionHeaderPtrs[get_st_shndx(SymbolPtrs[UserObjSymbolIndex])])
+                                + get_st_value(SymbolPtrs[UserObjSymbolIndex]);
             SeekOffset = (uint32_t)(calculated_offset);
             if (SeekOffset != calculated_offset)
             {
@@ -2461,7 +2492,8 @@ int32 LocateAndReadUserObject(void)
                 {
                     printf("ELF file indicates object '%s' is of size %lu but table definition structure indicates "
                            "size %d",
-                           TblFileDef.ObjectName, (long unsigned int)get_st_size(SymbolPtrs[UserObjSymbolIndex]),
+                           TblFileDef.ObjectName,
+                           (long unsigned int)get_st_size(SymbolPtrs[UserObjSymbolIndex]),
                            TblFileDef.ObjectSize);
                     if (TblFileDef.ObjectSize < get_st_size(SymbolPtrs[UserObjSymbolIndex]))
                     {
